@@ -31,6 +31,10 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "permissions": [
+      "MEDIA_LIBRARY",
+      "MEDIA_LIBRARY_WRITE_ONLY"
+    ]
   }
 }
