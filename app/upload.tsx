@@ -1,21 +1,34 @@
-import { useState } from 'react';
-import { Button, Image, View, StyleSheet } from 'react-native';
+import React from 'react';
+import { useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '@/lib/supabase';
+import ImageItem from '@/components/Image';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Upload() {
   const [image, setImage] = useState<string | null>(null);
+  const [files, setFiles] = useState<FileObject[]>([])
+
+  useEffect(() => {
+    loadImages()
+  }, [])
+
+  const loadImages = async () => {
+    const { data } = await supabase.storage.from('images').list();
+    console.log(data);
+    if (data) {
+      setFiles(data)
+    }
+  }
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       exif: true,
       quality: 1,
     });
-
-    console.log(result);
-    console.log(result.assets[0].exif);
-    console.log(result.assets[0].exif.GPSLatitude, result.assets[0].exif.GPSLongitude);
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
@@ -24,8 +37,18 @@ export default function Upload() {
 
   return (
     <View style={styles.container}>
-      <Button title="Pick an image from camera roll" onPress={pickImage} />
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+      <ScrollView>
+        {files.map((item) => (
+          <ImageItem
+            key={item.id}
+            item={item}
+          />
+        ))}
+      </ScrollView>
+
+      <TouchableOpacity onPress={pickImage}>
+        <Ionicons name="camera-outline" size={30} color={'#fff'} />
+      </TouchableOpacity>
     </View>
   );
 }
